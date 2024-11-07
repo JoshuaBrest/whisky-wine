@@ -1,6 +1,8 @@
 138 stdcall @(long str str str str long str long long str str long) USERENV_138
 
+@ stdcall CreateAppContainerProfile(wstr wstr wstr ptr long ptr)
 @ stdcall CreateEnvironmentBlock(ptr ptr long)
+@ stdcall DeriveAppContainerSidFromAppContainerName(wstr ptr)
 @ stdcall DestroyEnvironmentBlock(ptr)
 @ stdcall EnterCriticalPolicySection(long)
 @ stdcall ExpandEnvironmentStringsForUserA(ptr str ptr long)
