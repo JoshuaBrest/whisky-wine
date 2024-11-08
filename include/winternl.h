@@ -2291,6 +2291,11 @@ typedef struct _PROCESS_PRIORITY_CLASS {
     UCHAR       PriorityClass;
 } PROCESS_PRIORITY_CLASS, *PPROCESS_PRIORITY_CLASS;
 
+typedef struct _PROCESS_CYCLE_TIME_INFORMATION {
+    ULONGLONG   AccumulatedCycles;
+    ULONGLONG   CurrentCycleCount;
+} PROCESS_CYCLE_TIME_INFORMATION, *PPROCESS_CYCLE_TIME_INFORMATION;
+
 typedef struct _PROCESS_STACK_ALLOCATION_INFORMATION
 {
     SIZE_T ReserveSize;
@@ -3615,6 +3620,7 @@ typedef enum _PS_ATTRIBUTE_NUM
     PsAttributeBnoIsolation,
     PsAttributeDesktopAppPolicy,
     PsAttributeChpe,
+    PsAttributeMachineType,
     PsAttributeMax
 } PS_ATTRIBUTE_NUM;
 
@@ -3643,6 +3649,7 @@ typedef enum _PS_ATTRIBUTE_NUM
 #define PS_ATTRIBUTE_SAFE_OPEN_PROMPT_ORIGIN_CLAIM (PsAttributeSafeOpenPromptOriginClaim | PS_ATTRIBUTE_INPUT)
 #define PS_ATTRIBUTE_BNO_ISOLATION      (PsAttributeBnoIsolation | PS_ATTRIBUTE_INPUT)
 #define PS_ATTRIBUTE_DESKTOP_APP_POLICY (PsAttributeDesktopAppPolicy | PS_ATTRIBUTE_INPUT)
+#define PS_ATTRIBUTE_MACHINE_TYPE       (PsAttributeMachineType | PS_ATTRIBUTE_INPUT)
 
 typedef struct _PS_ATTRIBUTE
 {

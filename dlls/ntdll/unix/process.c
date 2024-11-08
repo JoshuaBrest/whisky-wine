@@ -1093,6 +1093,7 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
     int unixdir, socketfd[2] = { -1, -1 };
     pe_image_info_t pe_info;
     CLIENT_ID id;
+    USHORT machine = 0;
     HANDLE parent = 0, debug = 0, token = 0;
     UNICODE_STRING redir, path = {0};
     OBJECT_ATTRIBUTES attr, empty_attr = { sizeof(empty_attr) };
@@ -1135,6 +1136,9 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
         case PS_ATTRIBUTE_JOB_LIST:
             jobs_attr = &ps_attr->Attributes[i];
             break;
+        case PS_ATTRIBUTE_MACHINE_TYPE:
+            machine = *(USHORT *)ps_attr->Attributes[i].ValuePtr;
+            break;
         default:
             if (ps_attr->Attributes[i].Attribute & PS_ATTRIBUTE_INPUT)
                 FIXME( "unhandled input attribute %lx\n", ps_attr->Attributes[i].Attribute );
@@ -1143,8 +1147,8 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
     }
     if (!process_attr) process_attr = &empty_attr;
 
-    TRACE( "%s image %s cmdline %s parent %p\n", debugstr_us( &path ),
-           debugstr_us( &params->ImagePathName ), debugstr_us( &params->CommandLine ), parent );
+    TRACE( "%s image %s cmdline %s parent %p machine %x\n", debugstr_us( &path ),
+           debugstr_us( &params->ImagePathName ), debugstr_us( &params->CommandLine ), parent, machine );
 
     unixdir = get_unix_curdir( params );
 
@@ -1161,6 +1165,7 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
         }
         goto done;
     }
+    if (!machine) machine = pe_info.machine;
     if (!(startup_info = create_startup_info( attr.ObjectName, params, &startup_info_size ))) goto done;
     env_size = get_env_size( params, &winedebug );
 
@@ -1210,6 +1215,7 @@ NTSTATUS WINAPI NtCreateUserProcess( HANDLE *process_handle_ptr, HANDLE *thread_
         req->flags          = process_flags;
         req->socket_fd      = socketfd[1];
         req->access         = process_access;
+        req->machine        = machine;
         req->info_size      = startup_info_size;
         req->handles_size   = handles_size;
         req->jobs_size      = jobs_size;
@@ -1898,6 +1904,25 @@ NTSTATUS WINAPI NtQueryInformationProcess( HANDLE handle, PROCESSINFOCLASS class
                 SERVER_END_REQ;
             }
             else ret = STATUS_ACCESS_VIOLATION;
+        }
+        else ret = STATUS_INFO_LENGTH_MISMATCH;
+        break;
+
+    case ProcessCycleTime:
+        len = sizeof(PROCESS_CYCLE_TIME_INFORMATION);
+        if (size == len)
+        {
+            if (!info) ret = STATUS_ACCESS_VIOLATION;
+            else
+            {
+                PROCESS_CYCLE_TIME_INFORMATION cycles;
+
+                FIXME( "ProcessCycleTime (%p,%p,0x%08x,%p) stub\n", handle, info, (int)size, ret_len );
+                cycles.AccumulatedCycles = 0;
+                cycles.CurrentCycleCount = 0;
+
+                memcpy(info, &cycles, sizeof(PROCESS_CYCLE_TIME_INFORMATION));
+            }
         }
         else ret = STATUS_INFO_LENGTH_MISMATCH;
         break;
